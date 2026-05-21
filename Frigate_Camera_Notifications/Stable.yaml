@@ -134,6 +134,18 @@ blueprint:
                 - label: "Long with a timestamp HH:MM"
                   value: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }} at {{event['after']['start_time']|timestamp_custom('%H:%M')}}."
               custom_value: true
+        security_concern_title:
+          name: GenAI Security Concern Title
+          description: The text used when GenAI flags a security concern.
+          default: "Security Concern:"
+        needs_review_title:
+          name: GenAI Needs Review Title
+          description: The text used when GenAI flags an event that needs review.
+          default: "Needs Review:"
+        tts_fallback_message:
+          name: TTS Fallback Message
+          description: The default message to send for TTS if no other message is configured.
+          default: "TTS"
         update_sub_label:
           name: Update Sub Labels (Advanced)
           description: |
@@ -1059,11 +1071,13 @@ actions:
               genai_title: "{{ metadata.title | default('') }}"
               genai_shortSummary: "{{ metadata.shortSummary | default('') }}"
               genai_threat_level: "{{ metadata.potential_threat_level | int(0) }}"
+              security_concern_title: !input security_concern_title
+              needs_review_title: !input needs_review_title
               title: >-
                 {% if genai_threat_level == 2 %}
-                  Security Concern: {{ genai_title }}
+                  {{ security_concern_title }} {{ genai_title }}
                 {% elif genai_threat_level == 1 %}
-                  Needs Review: {{ genai_title }}
+                  {{ needs_review_title }} {{ genai_title }}
                 {% else %}
                   {{ genai_title }}
                 {% endif %}
@@ -1641,7 +1655,7 @@ actions:
                                     - device_id: !input notify_device
                                       domain: mobile_app
                                       type: notify
-                                      message: "{{'TTS'}}"
+                                      message: !input tts_fallback_message
                                       data:
                                         tag: "{{ id }}{{'-tts'}}"
                                         channel: "{{'alarm_stream' if critical else channel}}"
@@ -1650,7 +1664,7 @@ actions:
                               default:
                                 - action: "notify.{{ notify_group_target }}"
                                   data:
-                                    message: "{{'TTS'}}"
+                                    message: !input tts_fallback_message
                                     data:
                                       tag: "{{ id }}{{'-tts'}}"
                                       channel: "{{'alarm_stream' if critical else channel}}"
@@ -2114,7 +2128,7 @@ actions:
                                           - device_id: !input notify_device
                                             domain: mobile_app
                                             type: notify
-                                            message: "{{'TTS'}}"
+                                            message: !input tts_fallback_message
                                             data:
                                               tag: "{{ id }}{{'-loitering-tts' if loitering}}"
                                               channel: "{{'alarm_stream' if critical else channel}}"
@@ -2124,7 +2138,7 @@ actions:
                                     default:
                                       - action: "notify.{{ notify_group_target }}"
                                         data:
-                                          message: "{{'TTS'}}"
+                                          message: !input tts_fallback_message
                                           data:
                                             tag: "{{ id }}{{'-loitering-tts' if loitering}}"
                                             channel: "{{'alarm_stream' if critical else channel}}"
