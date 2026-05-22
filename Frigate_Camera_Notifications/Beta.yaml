@@ -116,27 +116,55 @@ blueprint:
           name: Notification Title (Optional)
           description: The title of the notification.
           default: ""
+        text_a:
+          name: Text Fragment "A "
+          description: The article used at the beginning of default messages.
+          default: "A "
+        text_was:
+          name: Text Fragment " was"
+          description: The text fragment indicating past tense. Must include leading space.
+          default: " was"
+        text_detected_on:
+          name: Text Fragment " detected on the "
+          description: The text fragment connecting the event to the camera. Must include leading/trailing spaces.
+          default: " detected on the "
+        text_camera:
+          name: Text Fragment " camera"
+          description: The text fragment following the camera name. Must include leading space.
+          default: " camera"
+        text_detected_hyphen:
+          name: Text Fragment " detected - "
+          description: The text fragment for short messages. Must include leading/trailing spaces.
+          default: " detected - "
+        text_at:
+          name: Text Fragment " at "
+          description: The text fragment connecting to a timestamp. Must include leading/trailing spaces.
+          default: " at "
+        text_in_the:
+          name: Text Fragment " in the "
+          description: The text fragment connecting to the zone name. Must include leading/trailing spaces.
+          default: " in the "
         message:
           name: Notification Message
           description: |
             The message of the notification.
-            You can use variables such as {{camera_name}} and {{label}}
-            e.g., A {{ label }} {{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera.
+            You can use variables such as {{camera_name}}, {{label}}, and the translation text fragments.
+            e.g., {{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}
 
-          default: "A {{ label }} {{ 'was detected' }} on the {{ camera_name }} camera."
+          default: "{{text_a}}{{ label }} was{{text_detected_on}}{{ camera_name }}{{text_camera}}."
           selector:
             select:
               options:
                 - label: "Default:   e.g., A Person was detected on the Side camera."
-                  value: "A {{ label }} {{ 'was detected' }} on the {{ camera_name }} camera."
+                  value: "{{text_a}}{{ label }} was{{text_detected_on}}{{ camera_name }}{{text_camera}}."
                 - label: "Short:     e.g., Person detected - Side"
-                  value: "{{ label }} detected - {{ camera_name }}"
+                  value: "{{ label }}{{text_detected_hyphen}}{{ camera_name }}"
                 - label: "Short with a timestamp HH:MM"
-                  value: "{{ label }} detected - {{ camera_name }} at {{event['after']['start_time']|timestamp_custom('%H:%M')}}"
+                  value: "{{ label }}{{text_detected_hyphen}}{{ camera_name }}{{text_at}}{{event['after']['start_time']|timestamp_custom('%H:%M')}}"
                 - label: "Long:      e.g., A Person was detected on the Side camera in the driveway."
-                  value: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
+                  value: "{{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}{{text_in_the if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
                 - label: "Long with a timestamp HH:MM"
-                  value: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }} at {{event['after']['start_time']|timestamp_custom('%H:%M')}}."
+                  value: "{{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}{{text_in_the if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}{{text_at}}{{event['after']['start_time']|timestamp_custom('%H:%M')}}."
               custom_value: true
         security_concern_title:
           name: GenAI Security Concern Title
@@ -987,6 +1015,13 @@ triggers:
       action: "custom-{{ this.entity_id}}"
     id: custom
 variables:
+  text_a: !input text_a
+  text_was: !input text_was
+  text_detected_on: !input text_detected_on
+  text_camera: !input text_camera
+  text_detected_hyphen: !input text_detected_hyphen
+  text_at: !input text_at
+  text_in_the: !input text_in_the
   input_camera: !input camera
   input_camera_name: "{{input_camera|expand|map(attribute='attributes.camera_name', default='none')|list}}"
   camera: "{{trigger.payload_json['after']['camera'] if trigger.id == 'frigate-event'}}"
