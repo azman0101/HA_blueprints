@@ -17,7 +17,7 @@ Now, after the automation is trigger we will be able to find the debug output in
 
 First go the the automation and select traces in the top right. 
 
-![image](https://github.com/SgtBatten/HA_blueprints/assets/24822223/6d1eee11-a6e0-4685-84e9-da1c519d6628)
+![image](https://github.com/azman0101/HA_blueprints/assets/24822223/6d1eee11-a6e0-4685-84e9-da1c519d6628)
 
 There is a visual depiction of the trace. This is broken down in [Create a guide later post]
 There are two nodes we are interested in, they are indicated in red. The first is the output for the initial notification. The second is the output from all update loop cycles.
