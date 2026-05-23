@@ -7,7 +7,7 @@ This guide will give more detail about each of the configuration options and pro
 This dropdown is automatically filtered to show you just your frigate cameras making the choice very easy. 
 You can select multiple cameras if desired.  
 
-If your dropdown list says "No matching entities found" see this [explanation](https://github.com/SgtBatten/HA_blueprints/issues/12)
+If your dropdown list says "No matching entities found" see this [explanation](https://github.com/azman0101/HA_blueprints/issues/12)
 
 This input is mandatory for the automation to function.
 
