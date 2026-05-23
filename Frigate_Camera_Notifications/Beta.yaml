@@ -121,22 +121,22 @@ blueprint:
           description: |
             The message of the notification.
             You can use variables such as {{camera_name}} and {{label}}
-            e.g., A {{ label }} {{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera.
+            e.g., Un(e) {{ label }} {{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}.
 
-          default: "A {{ label }} {{ 'was detected' }} on the {{ camera_name }} camera."
+          default: "Un(e) {{ label }} {{ 'a été détecté(e)' }} sur la caméra {{ camera_name }}."
           selector:
             select:
               options:
-                - label: "Default:   e.g., A Person was detected on the Side camera."
-                  value: "A {{ label }} {{ 'was detected' }} on the {{ camera_name }} camera."
-                - label: "Short:     e.g., Person detected - Side"
-                  value: "{{ label }} detected - {{ camera_name }}"
-                - label: "Short with a timestamp HH:MM"
-                  value: "{{ label }} detected - {{ camera_name }} at {{event['after']['start_time']|timestamp_custom('%H:%M')}}"
-                - label: "Long:      e.g., A Person was detected on the Side camera in the driveway."
-                  value: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
-                - label: "Long with a timestamp HH:MM"
-                  value: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }} at {{event['after']['start_time']|timestamp_custom('%H:%M')}}."
+                - label: "Défaut:   e.g., Une Personne a été détectée sur la caméra Side."
+                  value: "Un(e) {{ label }} {{ 'a été détecté(e)' }} sur la caméra {{ camera_name }}."
+                - label: "Court:     e.g., Personne détectée - Side"
+                  value: "{{ label }} détecté(e) - {{ camera_name }}"
+                - label: "Court avec horodatage HH:MM"
+                  value: "{{ label }} détecté(e) - {{ camera_name }} à {{event['after']['start_time']|timestamp_custom('%H:%M')}}"
+                - label: "Long:      e.g., Une Personne a été détectée sur la caméra Side dans l'allée."
+                  value: "Un(e) {{ label }}{{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}{{' dans le(s) ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
+                - label: "Long avec horodatage HH:MM"
+                  value: "Un(e) {{ label }}{{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}{{' dans le(s) ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }} à {{event['after']['start_time']|timestamp_custom('%H:%M')}}."
               custom_value: true
         update_sub_label:
           name: Update Sub Labels (Advanced)
@@ -1101,9 +1101,9 @@ actions:
               genai_threat_level: "{{ metadata.potential_threat_level | int(0) }}"
               title: >-
                 {% if genai_threat_level == 2 %}
-                  Security Concern: {{ genai_title }}
+                  Problème de Sécurité: {{ genai_title }}
                 {% elif genai_threat_level == 1 %}
-                  Needs Review: {{ genai_title }}
+                  Nécessite une Révision: {{ genai_title }}
                 {% else %}
                   {{ genai_title }}
                 {% endif %}
