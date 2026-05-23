@@ -112,68 +112,28 @@ blueprint:
           name: Notification Title (Optional)
           description: The title of the notification.
           default: ""
-        text_a:
-          name: Text Fragment "A "
-          description: The article used at the beginning of default messages.
-          default: "A "
-        text_was:
-          name: Text Fragment " was"
-          description: The text fragment indicating past tense. Must include leading space.
-          default: " was"
-        text_detected_on:
-          name: Text Fragment " detected on the "
-          description: The text fragment connecting the event to the camera. Must include leading/trailing spaces.
-          default: " detected on the "
-        text_camera:
-          name: Text Fragment " camera"
-          description: The text fragment following the camera name. Must include leading space.
-          default: " camera"
-        text_detected_hyphen:
-          name: Text Fragment " detected - "
-          description: The text fragment for short messages. Must include leading/trailing spaces.
-          default: " detected - "
-        text_at:
-          name: Text Fragment " at "
-          description: The text fragment connecting to a timestamp. Must include leading/trailing spaces.
-          default: " at "
-        text_in_the:
-          name: Text Fragment " in the "
-          description: The text fragment connecting to the zone name. Must include leading/trailing spaces.
-          default: " in the "
         message:
           name: Notification Message
           description: |
             The message of the notification.
-            You can use variables such as {{camera_name}}, {{label}}, and the translation text fragments.
-            e.g., {{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}
+            You can use variables such as {{camera_name}} and {{label}}
+            e.g., Un(e) {{ label }} {{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}.
 
-          default: "{{text_a}}{{ label }} was{{text_detected_on}}{{ camera_name }}{{text_camera}}."
+          default: "Un(e) {{ label }} {{ 'a été détecté(e)' }} sur la caméra {{ camera_name }}."
           selector:
             select:
               options:
-                - label: "Default:   e.g., A Person was detected on the Side camera."
-                  value: "{{text_a}}{{ label }} was{{text_detected_on}}{{ camera_name }}{{text_camera}}."
-                - label: "Short:     e.g., Person detected - Side"
-                  value: "{{ label }}{{text_detected_hyphen}}{{ camera_name }}"
-                - label: "Short with a timestamp HH:MM"
-                  value: "{{ label }}{{text_detected_hyphen}}{{ camera_name }}{{text_at}}{{event['after']['start_time']|timestamp_custom('%H:%M')}}"
-                - label: "Long:      e.g., A Person was detected on the Side camera in the driveway."
-                  value: "{{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}{{text_in_the if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
-                - label: "Long with a timestamp HH:MM"
-                  value: "{{text_a}}{{ label }}{{ text_was if type == 'end' else '' }}{{text_detected_on}}{{ camera_name }}{{text_camera}}{{text_in_the if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}{{text_at}}{{event['after']['start_time']|timestamp_custom('%H:%M')}}."
+                - label: "Défaut:   e.g., Une Personne a été détectée sur la caméra Side."
+                  value: "Un(e) {{ label }} {{ 'a été détecté(e)' }} sur la caméra {{ camera_name }}."
+                - label: "Court:     e.g., Personne détectée - Side"
+                  value: "{{ label }} détecté(e) - {{ camera_name }}"
+                - label: "Court avec horodatage HH:MM"
+                  value: "{{ label }} détecté(e) - {{ camera_name }} à {{event['after']['start_time']|timestamp_custom('%H:%M')}}"
+                - label: "Long:      e.g., Une Personne a été détectée sur la caméra Side dans l'allée."
+                  value: "Un(e) {{ label }}{{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}{{' dans le(s) ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }}."
+                - label: "Long avec horodatage HH:MM"
+                  value: "Un(e) {{ label }}{{ ' a été' if type == 'end' else '' }} détecté(e) sur la caméra {{ camera_name }}{{' dans le(s) ' if after_zones|length}}{{ after_zones | join(', ') | replace('_', ' ' ) | title }} à {{event['after']['start_time']|timestamp_custom('%H:%M')}}."
               custom_value: true
-        security_concern_title:
-          name: GenAI Security Concern Title
-          description: The text used when GenAI flags a security concern.
-          default: "Security Concern:"
-        needs_review_title:
-          name: GenAI Needs Review Title
-          description: The text used when GenAI flags an event that needs review.
-          default: "Needs Review:"
-        tts_fallback_message:
-          name: TTS Fallback Message
-          description: The default message to send for TTS if no other message is configured.
-          default: "TTS"
         update_sub_label:
           name: Update Sub Labels (Advanced)
           description: |
@@ -975,13 +935,6 @@ triggers:
       action: "custom-{{ this.entity_id}}"
     id: custom
 variables:
-  text_a: !input text_a
-  text_was: !input text_was
-  text_detected_on: !input text_detected_on
-  text_camera: !input text_camera
-  text_detected_hyphen: !input text_detected_hyphen
-  text_at: !input text_at
-  text_in_the: !input text_in_the
   input_camera: !input camera
   input_camera_name: "{{input_camera|expand|map(attribute='attributes.camera_name', default='none')|list}}"
   camera: "{{trigger.payload_json['after']['camera'] if trigger.id == 'frigate-event'}}"
@@ -1106,13 +1059,11 @@ actions:
               genai_title: "{{ metadata.title | default('') }}"
               genai_shortSummary: "{{ metadata.shortSummary | default('') }}"
               genai_threat_level: "{{ metadata.potential_threat_level | int(0) }}"
-              security_concern_title: !input security_concern_title
-              needs_review_title: !input needs_review_title
               title: >-
                 {% if genai_threat_level == 2 %}
-                  {{ security_concern_title }} {{ genai_title }}
+                  Problème de Sécurité: {{ genai_title }}
                 {% elif genai_threat_level == 1 %}
-                  {{ needs_review_title }} {{ genai_title }}
+                  Nécessite une Révision: {{ genai_title }}
                 {% else %}
                   {{ genai_title }}
                 {% endif %}
@@ -1690,7 +1641,7 @@ actions:
                                     - device_id: !input notify_device
                                       domain: mobile_app
                                       type: notify
-                                      message: !input tts_fallback_message
+                                      message: "{{'TTS'}}"
                                       data:
                                         tag: "{{ id }}{{'-tts'}}"
                                         channel: "{{'alarm_stream' if critical else channel}}"
@@ -1699,7 +1650,7 @@ actions:
                               default:
                                 - action: "notify.{{ notify_group_target }}"
                                   data:
-                                    message: !input tts_fallback_message
+                                    message: "{{'TTS'}}"
                                     data:
                                       tag: "{{ id }}{{'-tts'}}"
                                       channel: "{{'alarm_stream' if critical else channel}}"
@@ -2163,7 +2114,7 @@ actions:
                                           - device_id: !input notify_device
                                             domain: mobile_app
                                             type: notify
-                                            message: !input tts_fallback_message
+                                            message: "{{'TTS'}}"
                                             data:
                                               tag: "{{ id }}{{'-loitering-tts' if loitering}}"
                                               channel: "{{'alarm_stream' if critical else channel}}"
@@ -2173,7 +2124,7 @@ actions:
                                     default:
                                       - action: "notify.{{ notify_group_target }}"
                                         data:
-                                          message: !input tts_fallback_message
+                                          message: "{{'TTS'}}"
                                           data:
                                             tag: "{{ id }}{{'-loitering-tts' if loitering}}"
                                             channel: "{{'alarm_stream' if critical else channel}}"
